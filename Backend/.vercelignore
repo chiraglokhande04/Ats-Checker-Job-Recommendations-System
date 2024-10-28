@@ -1,0 +1,10 @@
+# Ignore node_modules
+node_modules/
+# Ignore local development files
+.env
+.git/
+tests/
+*.pyc
+__pycache__/
+# Ignore large dataset files
+data/
