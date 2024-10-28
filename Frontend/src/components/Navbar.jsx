@@ -12,15 +12,11 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-blue-600 p-4">
+    <nav className="bg-blue-600 p-4 fixed top-0 left-0 right-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo or Brand Name */}
-        {/* <div className="text-white font-bold text-xl flex flex-row justify-center items-center gap-x-1">
-        <FaBlackTie className=""/>
-          JobEase
-        </div> */}
         <div className="text-white font-bold text-xl flex flex-row justify-center items-center gap-x-1">
-        <TbTie />
+          <TbTie />
           JobEase
         </div>
 

@@ -8,13 +8,16 @@ const SearchBar = ({ placeholder, onSearchResults }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const jobTitles = ['site director knowledg univers' 
-    ,'administr assist officeteam',
+  const jobTitles = [
+    'site director knowledg univers',
+    'administr assist officeteam',
     'account manag chi payment system',
     'outsid wholesal sale rep parttim river front chrysler jeep dodg',
-    'custom servic rep help peopl hear loss captioncal', 'bookkeep accountemp',
+    'custom servic rep help peopl hear loss captioncal',
+    'bookkeep accountemp',
     'nuclear medicin tech prn hcaeast florida',
-    'construct project admin need asap officeteam','account clerk accountemp',
+    'construct project admin need asap officeteam',
+    'account clerk accountemp',
     'cashier murphi usa',
     'caregiv home health aid cna home instead senior care',
     'oto sale advisor 224 twinsburg club demonstr servic',
@@ -27,7 +30,8 @@ const SearchBar = ({ placeholder, onSearchResults }) => {
     'automot titl support clerk part time jack cooper transport',
     'lpn oakview rehab nurs center',
     'oto culinari ambassador 39 washington club demonstr servic',
-    'lm administr officeteam', 'assist district manag gannett co inc',
+    'lm administr officeteam',
+    'assist district manag gannett co inc',
     'offic assist officeteam',
     'pharmacist clinic specialist ltc parttim day shift flexibl hr swedish health',
     'data entri clerk officeteam',
@@ -36,7 +40,8 @@ const SearchBar = ({ placeholder, onSearchResults }) => {
     'snack bar attend american golf corpor',
     'unarm secur offic us secur associ',
     'line cook crown plaza independ own oper',
-    'kitchen manag job detail artesian hotel casino tradit spirit']
+    'kitchen manag job detail artesian hotel casino tradit spirit'
+  ];
 
   const handleInputChange = (e) => {
     const searchValue = e.target.value;
@@ -87,6 +92,11 @@ const SearchBar = ({ placeholder, onSearchResults }) => {
     }
   };
 
+  const handleFocus = () => {
+    // Show all job titles when input is focused
+    setFilteredOptions(jobTitles);
+  };
+
   return (
     <div className="relative w-full max-w-lg mx-auto">
       <form onSubmit={handleSearch} className="relative">
@@ -94,19 +104,10 @@ const SearchBar = ({ placeholder, onSearchResults }) => {
           type="text"
           value={query}
           onChange={handleInputChange}
+          onFocus={handleFocus} // Add focus handler
           placeholder={placeholder || "Search for jobs..."}
           className="w-full py-3 px-5 text-gray-700 bg-white border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 transform hover:scale-105 focus:shadow-lg"
         />
-        {/* {query && (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="absolute top-4 right-16 text-gray-500 hover:text-gray-700 focus:outline-none"
-            aria-label="Clear search"
-          >
-            <FaTimes />
-          </button>
-        )} */}
         <button
           type="submit"
           className="h-10 absolute top-1 right-3 bg-indigo-500 text-white px-4 py-2 rounded-full hover:bg-indigo-600 transition-colors duration-300"
