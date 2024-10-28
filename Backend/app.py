@@ -55,14 +55,20 @@ def recommendation(title):
 
 @app.route('/recommend', methods=['POST'])
 def recommend_jobs():
-    data = request.json
-    job_title = data.get('title')
-    if not job_title:
-        return jsonify({'status': 'failure', 'message': 'Job title is required'}), 400
+    try:
+        data = request.json
+        job_title = data.get('title')
+        if not job_title:
+            return jsonify({'status': 'failure', 'message': 'Job title is required'}), 400
 
-    recommendations = recommendation(job_title)
-    return jsonify({'status': 'success', 'recommendations': recommendations}) if recommendations else \
-        jsonify({'status': 'failure', 'message': 'Job title not found or no recommendations available'}), 404
+        recommendations = recommendation(job_title)
+        if recommendations:
+            return jsonify({'status': 'success', 'recommendations': recommendations})
+        else:
+            return jsonify({'status': 'failure', 'message': 'Job title not found or no recommendations available'}), 404
+    except Exception as e:
+        return jsonify({'status': 'failure', 'message': str(e)}), 500
+
 
 # ---- ATS Checker ---- #
 

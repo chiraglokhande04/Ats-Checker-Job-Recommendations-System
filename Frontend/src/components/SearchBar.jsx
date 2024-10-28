@@ -66,7 +66,7 @@ const SearchBar = ({ placeholder, onSearchResults }) => {
       setError(""); // Reset error state
       try {
         // Send the search query to the backend
-        const response = await axios.post("http://127.0.0.1:5000/recommend", {
+        const response = await axios.post("https://mnp-3.vercel.app/recommend", {
           title: query,
         });
 

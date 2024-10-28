@@ -34,7 +34,7 @@ const FileUpload = ({ onUploadSuccess }) => {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:5000/analyze_resume",
+        "https://mnp-3.vercel.app/analyze_resume",
         formData,
         {
           headers: {
