@@ -12,14 +12,132 @@ CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST"]}})
 
 # ---- Job Recommendations ---- #
 
+# try:
+#     df = pd.read_pickle('df.pkl')
+#     similarity = pickle.load(open('similarity.pkl', 'rb'))
+# except Exception as e:
+#     print(f"Error loading files: {e}")
+#     df = None
+#     similarity = None
+
+# def recommendation(title):
+#     if df is None or similarity is None:
+#         print("DataFrame or similarity matrix not loaded.")
+#         return []
+
+#     title = title.strip().lower()
+#     df.reset_index(drop=True, inplace=True)
+#     df.columns = df.columns.str.strip()
+
+#     if 'Title' not in df.columns:
+#         print("Error: 'Title' column missing.")
+#         return []
+
+#     try:
+#         idx = df[df['Title'].str.lower() == title].index[0]
+#         distances = similarity[idx]
+#         similar_jobs = sorted(list(enumerate(distances)), key=lambda x: x[1], reverse=True)[1:21]
+#         jobs = [
+#             {
+#                 'Title': df.iloc[i].Title,
+#                 'Position': df.iloc[i].Position,
+#                 'Company': df.iloc[i].Company,
+#                 'Status': df.iloc[i].Status,
+#                 'JobDescription': df.iloc[i]['Job.Description']
+#             }
+#             for i, _ in similar_jobs if i < len(df) and 'Job.Description' in df.columns
+#         ]
+#         return jobs if jobs else "No similar jobs found."
+
+#     except IndexError:
+#         print("Job title not found in DataFrame.")
+#         return []
+
+# @app.route('/recommend', methods=['POST'])
+# def recommend_jobs():
+#     try:
+#         data = request.json
+#         job_title = data.get('title')
+#         if not job_title:
+#             return jsonify({'status': 'failure', 'message': 'Job title is required'}), 400
+
+#         recommendations = recommendation(job_title)
+#         if recommendations:
+#             return jsonify({'status': 'success', 'recommendations': recommendations})
+#         else:
+#             return jsonify({'status': 'failure', 'message': 'Job title not found or no recommendations available'}), 404
+#     except Exception as e:
+#         return jsonify({'status': 'failure', 'message': str(e)}), 500
+
+
+
+
+app = Flask(__name__)
+
+# Sample data in case df.pkl is not available
+sample_data = [
+    {"Title": "Software Engineer", "Company": "TechCorp", "Job.Description": "Develop and maintain software applications.", "Status": "open"},
+    {"Title": "Software Engineer", "Company": "Innovatech", "Job.Description": "Work on core product development and code optimization.", "Status": "closed"},
+    {"Title": "Software Engineer", "Company": "CodeCrafters", "Job.Description": "Build scalable solutions in a team environment.", "Status": "open"},
+    {"Title": "Software Engineer", "Company": "NextGenSoft", "Job.Description": "Develop software solutions for real-time analytics.", "Status": "open"},
+    {"Title": "Software Engineer", "Company": "Cloudify", "Job.Description": "Integrate software with cloud services.", "Status": "closed"},
+
+    # Web Developer jobs
+    {"Title": "Web Developer", "Company": "WebWizards", "Job.Description": "Create and maintain websites and web applications.", "Status": "open"},
+    {"Title": "Front-End Developer", "Company": "NetDesigns", "Job.Description": "Develop UI/UX for web platforms.", "Status": "closed"},
+    {"Title": "Back-End Developer", "Company": "StackBuild", "Job.Description": "Manage server-side web logic and databases.", "Status": "open"},
+    {"Title": "Full Stack Developer", "Company": "SiteGenius", "Job.Description": "Build and maintain both front-end and back-end of web applications.", "Status": "open"},
+    {"Title": "Web Developer", "Company": "PixelPerfect", "Job.Description": "Design responsive web pages.", "Status": "closed"},
+
+    # App Developer jobs
+    {"Title": "App Developer", "Company": "Appify", "Job.Description": "Develop and maintain mobile applications.", "Status": "open"},
+    {"Title": "iOS Developer", "Company": "AppleSoft", "Job.Description": "Build and optimize apps for iOS devices.", "Status": "closed"},
+    {"Title": "Android Developer", "Company": "DroidMakers", "Job.Description": "Create applications for the Android platform.", "Status": "open"},
+    {"Title": "App Developer", "Company": "MobilityLabs", "Job.Description": "Maintain existing apps and fix bugs.", "Status": "open"},
+    {"Title": "Cross-Platform Developer", "Company": "FlexiApps", "Job.Description": "Build apps that run on multiple platforms.", "Status": "closed"},
+
+    # Data Scientist jobs
+    {"Title": "Data Scientist", "Company": "DataMine", "Job.Description": "Analyze large data sets to derive insights.", "Status": "open"},
+    {"Title": "Machine Learning Engineer", "Company": "SmartAnalytics", "Job.Description": "Develop ML algorithms for data analysis.", "Status": "closed"},
+    {"Title": "Data Scientist", "Company": "InsightHub", "Job.Description": "Work on predictive modeling and data analysis.", "Status": "open"},
+    {"Title": "Data Analyst", "Company": "MetricSphere", "Job.Description": "Extract and interpret data trends for business decisions.", "Status": "open"},
+    {"Title": "Data Engineer", "Company": "DataFlow", "Job.Description": "Develop and optimize data pipelines.", "Status": "closed"},
+
+    # ML Engineer jobs
+    {"Title": "ML Engineer", "Company": "MLLab", "Job.Description": "Develop machine learning models and pipelines.", "Status": "open"},
+    {"Title": "AI Researcher", "Company": "DeepMindLab", "Job.Description": "Research and develop deep learning solutions.", "Status": "closed"},
+    {"Title": "ML Engineer", "Company": "Algorithmics", "Job.Description": "Create and maintain ML models for product use.", "Status": "open"},
+    {"Title": "Deep Learning Engineer", "Company": "VisionAI", "Job.Description": "Develop CNN models for image processing.", "Status": "open"},
+    {"Title": "NLP Engineer", "Company": "SpeakTech", "Job.Description": "Build NLP solutions for text data.", "Status": "closed"},
+
+    # Other fields
+    {"Title": "Network Engineer", "Company": "NetSecure", "Job.Description": "Manage and maintain network infrastructure.", "Status": "open"},
+    {"Title": "Cybersecurity Analyst", "Company": "SecureSphere", "Job.Description": "Monitor and secure network and data systems.", "Status": "closed"},
+    {"Title": "DevOps Engineer", "Company": "CloudOps", "Job.Description": "Automate deployment and monitoring processes.", "Status": "open"},
+    {"Title": "System Administrator", "Company": "SysManage", "Job.Description": "Maintain servers and IT systems.", "Status": "open"},
+    {"Title": "Product Manager", "Company": "InnoSoft", "Job.Description": "Oversee product development from concept to launch.", "Status": "closed"}
+]
+
+
+# Try loading from file, or fall back to sample data
 try:
-    df = pd.read_pickle('df.pkl')
+    df_from_file = pd.read_pickle('df.pkl')
+except Exception as e:
+    print(f"Error loading df.pkl: {e}")
+    df_from_file = pd.DataFrame()  # Empty DataFrame if loading fails
+
+# Combine df_from_file with sample_data into a single DataFrame
+df_sample = pd.DataFrame(sample_data)
+df = pd.concat([df_from_file, df_sample], ignore_index=True).drop_duplicates(subset=['Title', 'Position', 'Company'])
+
+# Load similarity matrix if available
+try:
     similarity = pickle.load(open('similarity.pkl', 'rb'))
 except Exception as e:
-    print(f"Error loading files: {e}")
-    df = None
-    similarity = None
+    print(f"Error loading similarity.pkl: {e}")
+    similarity = None  # Fallback if similarity is not available
 
+# Recommendation function
 def recommendation(title):
     if df is None or similarity is None:
         print("DataFrame or similarity matrix not loaded.")
@@ -29,30 +147,47 @@ def recommendation(title):
     df.reset_index(drop=True, inplace=True)
     df.columns = df.columns.str.strip()
 
+    # Ensure required column exists
     if 'Title' not in df.columns:
         print("Error: 'Title' column missing.")
         return []
 
-    try:
-        idx = df[df['Title'].str.lower() == title].index[0]
-        distances = similarity[idx]
-        similar_jobs = sorted(list(enumerate(distances)), key=lambda x: x[1], reverse=True)[1:21]
-        jobs = [
-            {
-                'Title': df.iloc[i].Title,
-                'Position': df.iloc[i].Position,
-                'Company': df.iloc[i].Company,
-                'Status': df.iloc[i].Status,
-                'JobDescription': df.iloc[i]['Job.Description']
-            }
-            for i, _ in similar_jobs if i < len(df) and 'Job.Description' in df.columns
-        ]
-        return jobs if jobs else "No similar jobs found."
+    # Check if the title is in the dataset and provide recommendations
+    if title in df['Title'].str.lower().values:
+        try:
+            idx = df[df['Title'].str.lower() == title].index[0]
+            if similarity is not None and idx < len(similarity):
+                distances = similarity[idx]
+                similar_jobs = sorted(list(enumerate(distances)), key=lambda x: x[1], reverse=True)[1:21]
+            else:
+                similar_jobs = [(i, 1) for i in range(len(df)) if i != idx]  # All jobs if no similarity matrix
+            
+            # Generate a list of jobs with relevant fields
+            jobs = [
+                {
+                    'Title': df.iloc[i].Title,
+                    'Position': df.iloc[i].Position,
+                    'Company': df.iloc[i].Company,
+                    'Status': df.iloc[i].Status,
+                    'JobDescription': df.iloc[i]['Job.Description']
+                }
+                for i, _ in similar_jobs if i < len(df) and 'Job.Description' in df.columns
+            ]
+            return jobs if jobs else "No similar jobs found."
 
-    except IndexError:
-        print("Job title not found in DataFrame.")
-        return []
+        except IndexError:
+            print("Job title not found in DataFrame.")
+            return []
+    else:
+        # Return jobs that have titles matching similar names in dataset
+        matches = df[df['Title'].str.lower().str.contains(title)]
+        if not matches.empty:
+            jobs = matches[['Title', 'Position', 'Company', 'Status', 'Job.Description']].to_dict(orient='records')
+            return jobs
+        else:
+            return "Job title not found in dataset."
 
+# API endpoint
 @app.route('/recommend', methods=['POST'])
 def recommend_jobs():
     try:
@@ -68,6 +203,10 @@ def recommend_jobs():
             return jsonify({'status': 'failure', 'message': 'Job title not found or no recommendations available'}), 404
     except Exception as e:
         return jsonify({'status': 'failure', 'message': str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
 
 
 # ---- ATS Checker ---- #
